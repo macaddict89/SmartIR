@@ -77,17 +77,17 @@ Each different class (Climate, Fan, Media Player) device file has common part an
 | `maxTemperature`  |   `yes`   |    `int, float`    | Maximum device supported temperature. Can be float or integer depending on the `precision`                                                                                                                                                                                                                                 |
 | `precision`       |   `yes`   |    `int, float`    | This is size of the temperature steps you can set in the target temperature (if you set you temperature in 1 degree steps it will be `1`, if in half degrees it will be `0.5`, etc). Supported precisions are `2`, `1`, `0.5`, `0.1`                                                                                       |
 | `operationModes`  |   `yes`   | `array of strings` | List of the modes your device can operate in. This has to be subset of the HA climate [HVAC modes](https://developers.home-assistant.io/docs/core/entity/climate#hvac-modes). No customs modes are possible! Do not list `off` mode here it is included by default.                                                        |
-| `presetModes`     |   `no`    | `array of strings` | List of the preset modes your device can operate in. Does you device support different ways to operate under any given operationMode? For example can your AC units can do `eco` and `hi-power` cooling? Than those shall be listed here. The preset modes names could be freely defined to match naming used by your device. |
-| `fanModes`        |   `no`    | `array of strings` | List of the fan modes your device can operate in. Does you device support fan modes? High, low, auto, etc.? Then those shall be listed here. The fan modes names could be freely defined to match naming used by your device.                                                                                              |
-| `swingModes`      |   `no`    | `array of strings` | List of the fan swing modes your device can operate in. Does you device support different ways how your fan grills move? Then those shall be listed here. The swing modes names could be freely defined to match naming used by your device.                                                                               |
+| `presetModes`     |   `no`    | `array of strings` | List of the preset modes your device can operate in. Does you device support different ways to operate under any given operationMode? For example can your AC units can do `eco` and `hi-power` cooling? Then those shall be listed here. The preset mode names could be freely defined to match naming used by your device. |
+| `fanModes`        |   `no`    | `array of strings` | List of the fan modes your device can operate in. Does you device support fan modes? High, low, auto, etc.? Then those shall be listed here. The fan mode names could be freely defined to match naming used by your device.                                                                                              |
+| `swingModes`      |   `no`    | `array of strings` | List of the fan swing modes your device can operate in. Does you device support different ways how your fan grills move? Then those shall be listed here. The swing mode names could be freely defined to match naming used by your device.                                                                               |
 
 ### Climate commands
 
-Now when all modes supported by your device (operation, presets, fan, swing) are declared, you need to records IR command for their combination for any target temperature. There may be some tools to help you to help with such process.
+Now when all modes supported by your device (operation, presets, fan, swing) are declared, you need to record IR command for their combination for any target temperature. There may be some tools to help you to help with the process.
 
 #### Climate `off` commands
 
-Most of the controler devices have single `off` command, which is used to switch device off. In some more rare cases, there is different command for each operational mode device is currently working in. So for `cool` operational mode there could be `off_cool` command, for `heat` operational mode `off_heat`, etc. You need to have either `off` command or `off_MODE` command for all you operational codes declared.
+Most of the controller devices have a single `off` command, which is used to switch the device off. In some more rare cases, there is a different command for each operational mode the device is currently working in. So for `cool` operational mode there could be `off_cool` command, for `heat` operational mode `off_heat`, etc. You need to have either `off` command or `off_MODE` command for all you operational codes declared.
 
 ```yaml:
     "commands": {
@@ -106,7 +106,7 @@ or
 
 #### Climate `on` commands
 
-In some cases, controled device have dedicated `on` command (Otherwise device is switched on by the operation command and dedicated IR code to switch it on is not required). In case your `on` and `off` command are same, SmartIR not send `on` or `off` command again, if the device is assumed to be already in desired state. As without power sensor devices state is only assumed it is higly suggested to use in this case power sensor feature.
+In some cases, controlled device have a dedicated `on` command (Otherwise the device is switched on by the operation command and a dedicated IR code to switch it on is not required). In case your `on` and `off` command are the same, SmartIR will not send `on` or `off` command again, if the device is assumed to be already in desired state. As without power sensor devices state is only assumed it is highly suggested to use the power sensor feature.
 
 ```yaml:
     "commands": {
@@ -115,10 +115,10 @@ In some cases, controled device have dedicated `on` command (Otherwise device is
 
 #### Climate operation commands
 
-These are command to set controlled device into desired work state. Due to the nature how HVAC units works, all the modes and temperature are contained in single IR command. Therefore you need to records and declare IR commands for the all combinations of the modes and temperatures. The complete structure would look like:
+These are command to set controlled device into the desired work state. Due to the nature of how HVAC units works, all the modes and temperature are contained in a single IR command. Therefore, you need to record and declare IR commands for all the combinations of modes and temperatures. The complete structure would look like:
 
 `operation mode` -> `preset mode` -> `fan mode` -> `swing mode` -> `temperature` -> `recorded IR command`
-
+ƒ
 ```yaml:
     "commands": {
         "cool": {
@@ -144,9 +144,9 @@ These are command to set controlled device into desired work state. Due to the n
                 },
 ```
 
-- If you device doesn't support some mode under given higher level mode (for example temperatures are not supported under fan_only operation mode, or presetModes are not supported under dry operation mode), you have three possibilities how to address this:
+- If your device doesn't support some mode under a given higher level mode (for example temperatures are not supported under fan_only operation mode, or presetModes are not supported under dry operation mode), you have three possibilities how to address this:
 
-  1. Use `-` as 'catch all' mode name/temperature. Using this approach has additional behavior - if you change mode/temperature which to the value covered by `-` the value will not change in the HA. Example: temperatures are not supported under fan_only operation mode - when you will try to change temperature using `-` key the temperature in HA stays same:
+  1. Use `-` as a 'catch all' mode name/temperature. Using this approach has additional behavior - if you change mode/temperature to a value covered by `-` the value will not change in HA. Example: temperatures are not supported under fan_only operation mode - when you try to change temperature using the `-` key the temperature in HA stays same:
 
   ```yaml:
   "commands": {
@@ -158,7 +158,7 @@ These are command to set controlled device into desired work state. Due to the n
                   },
   ```
 
-  2. Define some default mode (i.e. something like `none` or `default` but any name will do) as first in the declaration section and use it as default failover mode. Example: if you are running for example in the operation mode `cool` with preset mode `eco` and you change operation mode to `dry` which doesn't support presets, then it will try to select first available preset in the order presets are declared in the `presetModes` - and it will therefore choose your first one - `none`:
+  2. Define some default mode (i.e. something like `none` or `default` but any name will do) as first in the declaration section and use it as default failover mode. Example: if you are running operation mode `cool` with preset mode `eco` and you change operation mode to `dry` which doesn't support presets, then it will try to select first available preset in the order presets are declared in the `presetModes` - and it will therefore choose your first one - `none`:
 
   ```yaml:
   "commands": {
@@ -192,7 +192,7 @@ These are command to set controlled device into desired work state. Due to the n
                   },
   ```
 
-## Light Speficic
+## Light Specific
 
 ### Light declaration part
 
@@ -292,7 +292,7 @@ Alternatively, commands can be defined for each supported color temperature valu
     }
 ```
 
-## Fan Speficic
+## Fan Specific
 
 TBD
 
